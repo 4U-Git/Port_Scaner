@@ -2,22 +2,27 @@ import socket
 from termcolor import colored
 
 host = input(f"\n[+] Introduce la Direccion IP: ")
-port = int(input(f"[+] Introduce el Puerto a Escanear: ")) # convertir a entero el puerto
 
-def port_scanner(port):
-    
+def create_socket():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # crear socket
-    s.settimeout(0.2) # tiempo de espera para la conexion
+    s.settimeout(1) # tiempo de espera para la conexion
+    return s
     
-    if s.connect_ex((host, port)): # devuelve un valor, si es 0 esta abierto
-        print(f"\n[!] El Puerto {port} Esta cerrado")
-    else:
-        print(f"\n[+] El Puerto {port} Esta abierto")   
+def port_scanner(port, s):
     
-    s.close() # cerrar socket
+    try:
+        s.connect((host, port)) # intentar conectar al puerto
+        print(colored(f"[+] Puerto {port} Abierto", 'green')) # puerto abierto
+        s.close() # cerrar socket
     
+    except (socket.timeout, ConnectionRefusedError):
+        s.close() # cerrar socket si no se puede conectar
+        
 def main():
-    port_scanner(port) # llamar a la funcion
+    
+    for port in range(1, 1025): # escanear puertos del 1 al 1024
+        s = create_socket() # crear socket
+        port_scanner(port, s) # escanear puerto
 
 if __name__ == '__main__':
-    main()
+    main() 
